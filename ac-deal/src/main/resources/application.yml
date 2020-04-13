@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: ac-transaction
+  # JPA 相关配置
+  jpa:
+    # 设置默认存储引擎为InnoDB
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+
+logging:
+  config: classpath:logback-boot.xml
+
+#日志配置
+logback:
+  logdir: "logs"
+  appname: ${spring.application.name}
+management:
+  endpoints:
+    web.exposure.include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+
+login:
+  config:
+    passUrlList:
+      - "/auth/**"
+      - "/user/avatar"
+
+##jwt配置
+audience:
+  # 代表这个JWT的接收对象,存入audience
+  clientId: 098f6bcd4621d373cade4e832627b4f6
+  # 密钥, 经过Base64加密, 可自行替换
+  base64Secret: MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY=
+  # JWT的签发主体，存入issuer
+  name: restapiuser
+  # 过期时间，分钟
+  expiresMinute: 1440
+
