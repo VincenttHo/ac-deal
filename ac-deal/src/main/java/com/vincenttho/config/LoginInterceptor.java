@@ -1,5 +1,6 @@
 package com.vincenttho.config;
 
+import com.vincenttho.utils.RedisUtil;
 import com.vincenttho.utils.UserInfoUtil;
 import com.vincenttho.common.model.SysUser;
 import com.vincenttho.config.model.Audience;
@@ -83,8 +84,10 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 
                 log.info("当前token：{}", token);
 
-                String userId = JwtTokenUtil.getUserId(token, audience.getBase64Secret());
-                String username = JwtTokenUtil.getUsername(token, audience.getBase64Secret());
+                String jwtToken = RedisUtil.get("auth::token::" + token);
+
+                String userId = JwtTokenUtil.getUserId(jwtToken, audience.getBase64Secret());
+                String username = JwtTokenUtil.getUsername(jwtToken, audience.getBase64Secret());
                 SysUser sysUser = new SysUser();
                 sysUser.setUserId(Integer.parseInt(userId));
                 sysUser.setUserName(username);
@@ -93,7 +96,7 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 
                 log.info("当前用户信息：{}", sysUser);
 
-                boolean expiration = JwtTokenUtil.isExpiration(token, audience.getBase64Secret());
+                boolean expiration = JwtTokenUtil.isExpiration(jwtToken, audience.getBase64Secret());
                 if (expiration) {
                     log.info("校验通过" );
                     return true;

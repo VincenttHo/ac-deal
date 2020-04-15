@@ -9,10 +9,13 @@ import com.vincenttho.service.user.UserInfoDO;
 import com.vincenttho.service.user.UserInfoDao;
 import com.vincenttho.utils.CheckUtil;
 import com.vincenttho.utils.JwtTokenUtil;
+import com.vincenttho.utils.RedisUtil;
 import com.vincenttho.utils.SendEamilUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.MessagingException;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
 import java.util.Date;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -38,6 +43,7 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping(RestfulApiConstants.URL_PREFFIX + "/auth")
 @Api(tags = "权限相关接口")
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -48,6 +54,9 @@ public class AuthController {
 
     @Autowired
     private CaptchaDao captchaDao;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     private Pattern emailPattern = Pattern.compile("^\\s*\\w+(?:\\.{0,1}[\\w-]+)*@[a-zA-Z0-9]+(?:[-.][a-zA-Z0-9]+)*\\.[a-zA-Z]+\\s*$");
 
@@ -72,11 +81,18 @@ public class AuthController {
             throw new RuntimeException("用户名或密码错误！");
         }
 
-        String token = JwtTokenUtil.createJWT(userInfo.getUserId().toString(), userInfo.getUserName(), audience);
+        String jwtToken = JwtTokenUtil.createJWT(userInfo.getUserId().toString(), userInfo.getUserName(), audience);
+        String token = UUID.randomUUID().toString().replaceAll("-", "");
+        try {
+            RedisUtil.set("auth::token::" + token, jwtToken, Duration.ofMinutes(audience.getExpiresMinute()));
+        } catch (Exception e) {
+            log.error("保存token到redis错误：{}", e.getMessage());
+            throw new RuntimeException(e);
+        }
         TokenDTO tokenDTO = new TokenDTO();
         tokenDTO.setToken(token);
         tokenDTO.setUserInfo(userInfo);
-        tokenDTO.setExpirationDate(JwtTokenUtil.getExpiration(token, audience.getBase64Secret()));
+        tokenDTO.setExpirationDate(JwtTokenUtil.getExpiration(jwtToken, audience.getBase64Secret()));
 
         return new ResultBean<>(tokenDTO);
 

@@ -12,6 +12,6 @@ public class Audience {
     private String clientId;
     private String base64Secret;
     private String name;
-    private int expiresMinute;
+    private Integer expiresMinute;
 
 }

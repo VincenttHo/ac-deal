@@ -9,7 +9,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = {
         "com.vincenttho.service",
         "com.vincenttho.config",
-        "com.vincenttho.task"
+        "com.vincenttho.task",
+        "com.vincenttho.utils"
 })
 @EntityScan(basePackages = {
         "com.vincenttho.service"

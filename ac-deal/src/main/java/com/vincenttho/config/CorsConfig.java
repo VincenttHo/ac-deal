@@ -44,6 +44,7 @@ public class CorsConfig {
     private CorsConfiguration buildConfig() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.addAllowedOrigin("https://festive-bohr-6fea62.netlify.com");
+        corsConfiguration.addAllowedOrigin("https://ac-exchange.netlify.com");
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("OPTIONS");
         corsConfiguration.addAllowedMethod("HEAD");
